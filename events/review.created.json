@@ -1,0 +1,12 @@
+{
+    "type": "review.created",
+    "version": "1.0",
+    "playload": {
+        "reviewid": "number",
+        "placeId": "number",
+        "userId": "number",
+        "rating": "number",
+        "comment": "string",
+        "createdAt": "ISO8601 string"
+    }
+}
