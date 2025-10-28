@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const kafka = new Kafka({
-    clientId: 'travllog-producer',
+    clientId: 'travellog-producer',
     brokers: [process.env.KAFKA_BROKER]
 })
 
