@@ -1,0 +1,22 @@
+{
+  "name": "travellog-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "apollo-server": "^3.13.0",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^17.2.3",
+    "graphql": "^16.11.0",
+    "ioredis": "^5.8.2",
+    "kafkajs": "^2.2.4"
+  }
+}
