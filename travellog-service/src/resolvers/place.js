@@ -4,13 +4,13 @@ export const placeResolvers = {
     Query: {
         places: async (_, __, { prisma }) => {
             const cacheStTime = Date.now();
-            let dataRetrivalTime;
+            let dataRetrievalTime;
             const cacheKey = 'all_places';
             const cachedPlaces = await redis.get(cacheKey);
             if(cachedPlaces) {
                 const cacheEndTime = Date.now();
-                dataRetrivalTime = cacheEndTime - cacheStTime;
-                console.log(`cache hit! all_places - Retrived in ${dataRetrivalTime}ms`);
+                dataRetrievalTime = cacheEndTime - cacheStTime;
+                console.log(`cache hit! all_places - Retrived in ${dataRetrievalTime}ms`);
                 return JSON.parse(cachedPlaces);
             }
 
@@ -19,8 +19,8 @@ export const placeResolvers = {
             const dbStTime = Date.now();
             const places = await prisma.place.findMany();
             const dbEndTime = Date.now();
-            dataRetrivalTime = dbEndTime - dbStTime;
-            console.log(`Data retrived from DB in ${dataRetrivalTime}ms`);
+            dataRetrievalTime = dbEndTime - dbStTime;
+            console.log(`Data retrieved from DB in ${dataRetrievalTime}ms`);
 
             await redis.set(cacheKey, JSON.stringify(places), 'EX', 120);
             return places;
@@ -28,15 +28,20 @@ export const placeResolvers = {
         place: async (_, { id }, { prisma }) => await prisma.place.findUnique({ where: { id: parseInt(id) } }),
     },
     Mutation: {
-        addPlace: async (_, args, { prisma }) => await prisma.place.create({data: args}),
+        addPlace: async (_, args, { prisma }) => {
+            const place = await prisma.place.create({data: args});
+            await redis.del('all_places');
+            return place;
+        }
     },
     Place: {
         reviews: async (place, _, { prisma}) => await prisma.review.findMany({ where: { placeId: place.id } }),
         avgRating: async (place, _, {prisma}) => {
-            const reviews = await prisma.review.findMany({where: {placeId: place.id}});
-            if(reviews.length === 0) return 0;
-            const total = reviews.reduce((sum, review) => sum + review.rating, 0);
-            return total / reviews.length;
+            const result = await prisma.review.aggregate({
+                where: { placeId: place.id },
+                _avg: { rating: true },
+            });
+            return result._avg.rating ?? 0;
         },
     },
 }

@@ -38,7 +38,7 @@ export const userResolvers = {
 
     User: {
         reviews: async (user, __, {prisma}) => {
-            await prisma.user.findUnique({
+            return await prisma.review.findMany({
                 where: { userId: user.id },
             })
         }
