@@ -7,7 +7,7 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:latest
-    containser_name: kafka-1
+    container_name: kafka-1
     ports:
       - "9092:9092"
     environment:
@@ -20,43 +20,43 @@ services:
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-    postgres_analytics:
-      image: postgres:15
-      container_name: postgres_analytics
-      environment:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_DB: travellog_analytics
-      ports:
-        - "5433:5432"
-      volumes:
-        - pgdata_analytics:/var/lib/postgresql/data
+  # postgres_analytics:
+  #   image: postgres:15
+  #   container_name: postgres_analytics
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: travellog_analytics
+  #   ports:
+  #     - "5433:5432"
+  #   volumes:
+  #     - pgdata_analytics:/var/lib/postgresql/data
 
-    travellog:
-      build:
-        context: ../travellog-service
-        docker-file: Dockerfile
-      container_name: travellog
-      env_file:
-        - ../travellog-service/.env
-      depends_on:
-        - redis
-        - kafka
-      port:
-        - "4000:4000"
-      
-    analytics:
-      build:
-        context: ../analytics-service
-        docker-file: Dockerfile
-      container_name: analytics
-      env_file:
-        - ../analytics-service/.env
-      depends_on:
-        - postgres_analytics
-        - kafka
-      ports:
-        - "5000:5000"
+  travellog:
+    build:
+      context: ../travellog-service
+      dockerfile: Dockerfile
+    container_name: travellog
+    env_file:
+      - ../travellog-service/.env
+    depends_on:
+      - redis
+      - kafka
+    ports:
+      - "4000:4000"
+    
+  # analytics:
+  #   build:
+  #     context: ../analytics-service
+  #     dockerfile: Dockerfile
+  #   container_name: analytics
+  #   env_file:
+  #     - ../analytics-service/.env
+  #   depends_on:
+  #     - postgres_analytics
+  #     - kafka
+  #   ports:
+  #     - "5000:5000"
 
 volumes:
   pgdata_analytics:
