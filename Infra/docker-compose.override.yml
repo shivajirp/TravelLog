@@ -33,18 +33,24 @@ services:
   #     - pgdata_analytics:/var/lib/postgresql/data
 
   travellog:
-    build:
-      context: ../travellog-service
-      dockerfile: Dockerfile
-      target: prod
     container_name: travellog
     env_file:
       - ../travellog-service/.env
+    build:
+      context: ../travellog-service
+      dockerfile: Dockerfile
+      target: dev
+    volumes:
+      - ../travellog-service:/app
+      - /app/node_modules
+    command: npm start
+    ports:
+      - "4000:4000"
+    extra_hosts:
+      - "db.wzjrszmbstniolzztjhc.supabase.co:10.40.137.133"
     depends_on:
       - redis
       - kafka
-    ports:
-      - "4000:4000"
     
   # analytics:
   #   build:

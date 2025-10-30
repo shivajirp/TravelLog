@@ -10,8 +10,12 @@ const kafka = new Kafka({
 export const producer = kafka.producer();
 
 export const initProducer = async () => {
-    await producer.connect();
-    console.log('Kafka producer connected');
+    try {
+        await producer.connect();
+        console.log('Kafka producer connected');        
+    } catch (error) {
+        console.error('Error connecting Kafka producer:', error);
+    }
 }
 
 export const publishEvent = async (topic, message) => {
