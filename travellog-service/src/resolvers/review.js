@@ -1,10 +1,14 @@
 import { publishEvent } from "../kafka/producer.js";
 import redis from "../redis.js";
+import { cacheGetorSetData } from "../utils/cache.js";
 
 export const reviewResolvers = {
     Query: {
         reviews: async (_, __, { prisma }) => {
-            return await prisma.review.findMany();
+            const reviews = await cacheGetorSetData('reviews:all', 60, async () => {
+                return await prisma.review.findMany();
+            });
+            return reviews;
         }
     },
 
@@ -21,7 +25,7 @@ export const reviewResolvers = {
             
             // invalidate cache
             await redis.del(`reviews_place_${args.placeId}`);
-            await redis.del(`all_places`);
+            await redis.del(`reviews:all`);
 
             const event = {
                 reviewId: review.id,
@@ -45,7 +49,12 @@ export const reviewResolvers = {
     },
 
     Review: {
-        user: async (review, _, { prisma}) => await prisma.user.findUnique({ where: { id: review.userId } }),
+        user: async (review, _, { prisma}) => {
+            const user = await cacheGetorSetData(`user:${review.userId}`, 300, async () => {
+                return await prisma.user.findUnique({ where: { id: review.userId } });
+            });
+            return user;
+        },
         place: async (review, _, { prisma}) => await prisma.place.findUnique({ where: { id: review.placeId } }),
     },
 }
