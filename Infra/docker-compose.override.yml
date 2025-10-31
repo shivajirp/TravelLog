@@ -1,56 +1,28 @@
 services:
-  redis:
-    image: redis:latest
-    container_name: redis
-    ports:
-      - "6379:6379"
-
-  kafka:
-    image: confluentinc/cp-kafka:latest
-    container_name: kafka-1
-    ports:
-      - "9092:9092"
+  postgres:
+    volumes:
+      - travellog_db_data:/var/lib/postgresql/data
     environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
-      KAFKA_LOG_DIRS: /var/lib/kafka/data
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-
-  # postgres_analytics:
-  #   image: postgres:15
-  #   container_name: postgres_analytics
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: postgres
-  #     POSTGRES_DB: travellog_analytics
-  #   ports:
-  #     - "5433:5432"
-  #   volumes:
-  #     - pgdata_analytics:/var/lib/postgresql/data
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: travellog
 
   travellog:
-    container_name: travellog
-    env_file:
-      - ../travellog-service/.env
     build:
       context: ../travellog-service
       dockerfile: Dockerfile
       target: dev
     volumes:
-      - ../travellog-service:/app
+      - ../travellog-service/src:/app/src
+      - ../travellog-service/.env:/app/.env
       - /app/node_modules
     command: npm start
     ports:
       - "4000:4000"
-    extra_hosts:
-      - "db.wzjrszmbstniolzztjhc.supabase.co:10.40.137.133"
     depends_on:
       - redis
       - kafka
+      - postgres
     
   # analytics:
   #   build:
@@ -66,4 +38,5 @@ services:
   #     - "5000:5000"
 
 volumes:
-  pgdata_analytics:
+  # pgdata_analytics:
+  travellog_service_db:

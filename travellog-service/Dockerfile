@@ -4,16 +4,20 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+# RUN npx prisma migrate dev
 RUN npx prisma generate
 
 
 FROM base AS dev
 ENV NODE_ENV=development
-CMD ["npm", "start"]
+# CMD ["npm", "start"]
+EXPOSE 4000
+CMD ["npx", "prisma", "migrate", "dev", "&&", "npm", "start"]
 
 
 FROM base AS prod
 ENV NODE_ENV=production
 RUN npm prune --production
 EXPOSE 4000
-CMD ["node", "src/index.js"]
+# CMD ["node", "src/index.js"]
+CMD ["npx", "prisma", "migrate", "deploy", "&&", "node", "src/index.js"]
