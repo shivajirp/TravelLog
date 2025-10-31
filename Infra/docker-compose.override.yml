@@ -16,7 +16,7 @@ services:
       - ../travellog-service/src:/app/src
       - ../travellog-service/.env:/app/.env
       - /app/node_modules
-    command: npm start
+    command: sh -c "npx prisma migrate dev && npm start"
     ports:
       - "4000:4000"
     depends_on:

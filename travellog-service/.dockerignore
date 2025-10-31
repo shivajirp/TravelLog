@@ -1,0 +1,46 @@
+# Node dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Prisma generated files (optional, will be re-generated in container)
+prisma/dev.db
+prisma/*.log
+
+# Build artifacts
+dist
+build
+coverage
+.cache
+.tmp
+
+# Docker files
+Dockerfile*
+docker-compose*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE/editor files
+.vscode
+.idea
+*.swp
+
+# Git and version control
+.git
+.gitignore
+.gitattributes
+
+# Logs
+*.log
+logs
+npm-debug.log*
