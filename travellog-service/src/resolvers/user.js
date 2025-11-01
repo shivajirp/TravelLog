@@ -1,11 +1,15 @@
 import bcrypt from 'bcryptjs';
+import { cacheGetorSetData } from '../utils/cache.js';
 
 export const userResolvers = {
     Query: {
         user: async (_, {id}, {prisma}) => {
-            return await prisma.user.findUnique({
-                where: { id: parseInt(id) },
-            })
+            const user = await cacheGetorSetData(`user:${id}`, 300, async () => {
+                return await prisma.user.findUnique({
+                    where: { id: parseInt(id) },
+                });
+            });
+            return user;
         },
 
         users: async (_, __, {prisma}) => {

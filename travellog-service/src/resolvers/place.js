@@ -1,36 +1,25 @@
 import redis from '../redis.js';
+import { cacheGetorSetData } from '../utils/cache.js';
 
 export const placeResolvers = {
     Query: {
         places: async (_, __, { prisma }) => {
-            const cacheStTime = Date.now();
-            let dataRetrievalTime;
-            const cacheKey = 'all_places';
-            const cachedPlaces = await redis.get(cacheKey);
-            if(cachedPlaces) {
-                const cacheEndTime = Date.now();
-                dataRetrievalTime = cacheEndTime - cacheStTime;
-                console.log(`cache hit! all_places - Retrived in ${dataRetrievalTime}ms`);
-                return JSON.parse(cachedPlaces);
-            }
-
-            // cache miss
-            console.log('cache miss! all_places');
-            const dbStTime = Date.now();
-            const places = await prisma.place.findMany();
-            const dbEndTime = Date.now();
-            dataRetrievalTime = dbEndTime - dbStTime;
-            console.log(`Data retrieved from DB in ${dataRetrievalTime}ms`);
-
-            await redis.set(cacheKey, JSON.stringify(places), 'EX', 120);
+            const places = await cacheGetorSetData('places:all', 60, async () => {
+                return await prisma.place.findMany();
+            });
             return places;
         },
-        place: async (_, { id }, { prisma }) => await prisma.place.findUnique({ where: { id: parseInt(id) } }),
+        place: async (_, { id }, { prisma }) => {
+            const place = await cacheGetorSetData(`place:${id}`, 60, async () => {
+                return await prisma.place.findUnique({ where: { id: parseInt(id) } });
+            });
+            return place;
+        }
     },
     Mutation: {
         addPlace: async (_, args, { prisma }) => {
             const place = await prisma.place.create({data: args});
-            await redis.del('all_places');
+            await redis.del('places:all');
             return place;
         }
     },
