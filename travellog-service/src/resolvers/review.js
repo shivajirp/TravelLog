@@ -24,7 +24,7 @@ export const reviewResolvers = {
             });
             
             // invalidate cache
-            await redis.del(`reviews_place_${args.placeId}`);
+            await redis.del(`reviews:place:${args.placeId}`);
             await redis.del(`reviews:all`);
 
             const event = {
