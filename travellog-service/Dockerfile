@@ -4,11 +4,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+# RUN npx prisma migrate dev
 RUN npx prisma generate
 
 
 FROM base AS dev
 ENV NODE_ENV=development
+EXPOSE 4000
 CMD ["npm", "start"]
 
 
