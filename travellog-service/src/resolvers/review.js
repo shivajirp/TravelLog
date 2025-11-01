@@ -25,6 +25,7 @@ export const reviewResolvers = {
             
             // invalidate cache
             await redis.del(`reviews:all`);
+            await redis.del(`place:${args.placeId}`);
 
             const event = {
                 reviewId: review.id,
