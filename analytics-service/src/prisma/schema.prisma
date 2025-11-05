@@ -1,0 +1,32 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model place_stats {
+  place_id Int @id
+  total_reviews BigInt @default(0)
+  total_rating BigInt @default(0)
+  avg_rating Float @default(0)
+}
+
+model review_events {
+  id Int @id @default(autoincrement())
+  review_id Int @unique
+  user_id Int
+  place_id Int
+  rating Int
+  comment String?
+  created_at DateTime?
+}

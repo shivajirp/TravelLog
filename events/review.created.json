@@ -2,7 +2,7 @@
     "type": "review.created",
     "version": "1.0",
     "playload": {
-        "reviewid": "number",
+        "reviewId": "number",
         "placeId": "number",
         "userId": "number",
         "rating": "number",
