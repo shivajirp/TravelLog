@@ -23,7 +23,10 @@ const start = async () => {
   global.consumerConnected = true;
 
   await consumer.subscribe({ topic: TOPIC, fromBeginning: false });
-  await startConsumer(producer, consumer);
+  startConsumer(producer, consumer).catch((error) => {
+    logger.error({ error }, "Kafka consumer stopped unexpextedly");
+    process.exit(1);
+  });
 
   startServer(PORT, consumer, producer);
   global.ready = true;

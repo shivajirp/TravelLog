@@ -1,5 +1,5 @@
 import logger from "./logger.js";
-import { prisma } from "./prismaClient.js";
+import { prisma } from "./db.js";
 import { reviewProcessedCounter, reviewProcessingDuration } from "./metrics.js";
 import dotenv from "dotenv";
 import { retryWithBackoff } from "./utils/backoff.js";
@@ -31,7 +31,7 @@ export const startConsumer = async (producer, consumer) => {
           payload = JSON.parse(message.value.toString());
         } catch (error) {
           logger.error(
-            { err, offset: message.offset },
+            { error, offset: message.offset },
             "Failed to parse kafka message JSON"
           );
           reviewProcessedCounter.inc({ status: "invalid_payload" });
@@ -103,6 +103,9 @@ export const startConsumer = async (producer, consumer) => {
               },
               "Failed to publish message to DLQ"
             );
+            reviewProcessedCounter.inc({ status: "dlq_publish_failed" });
+            // Resolve offset to prevent infinite retry loop
+            resolveOffset(message.offset);
           }
         } finally {
           timer();
