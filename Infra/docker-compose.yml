@@ -6,7 +6,7 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka-1
+    container_name: kafka
     ports:
       - "9092:9092"
     environment:
@@ -18,10 +18,15 @@ services:
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --list --bootstrap-server localhost:9092 || exit 1"]
+      interval: 10s
+      timeout: 15s
+      retries: 5
+      start_period: 15s
 
   analytics_service_db:
     image: postgres:15
-    container_name: analytics_service_db
     environment:
       POSTGRES_USER: analytics_user
       POSTGRES_PASSWORD: analytics_password
@@ -30,6 +35,11 @@ services:
       - "5433:5432"
     volumes:
       - analytics_service_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U analytics_user -d analytics_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   postgres:
     image: postgres:16-alpine
@@ -65,18 +75,19 @@ services:
     ports:
       - "4000:4000"
     
-  # analytics:
-  #   build:
-  #     context: ../analytics-service
-  #     dockerfile: Dockerfile
-  #   container_name: analytics
-  #   env_file:
-  #     - ../analytics-service/.env
-  #   depends_on:
-  #     - postgres_analytics
-  #     - kafka
-  #   ports:
-  #     - "5000:5000"
+  analytics:
+    build:
+      context: ../analytics-service
+      dockerfile: Dockerfile
+    env_file:
+      - ../analytics-service/.env
+    depends_on:
+      analytics_service_db:
+          condition: service_healthy
+      kafka:
+          condition: service_healthy
+    ports:
+      - "5001:5001"
 
 volumes:
   analytics_service_db:

@@ -3,8 +3,9 @@ import logger from "./logger.js";
 
 export const prisma = new PrismaClient();
 
-prisma.$on('beforeExit', async () => {
+process.on('beforeExit', async () => {
     logger.info("Prisma beforeExit event triggered, disconnecting...");
+    await prisma.$disconnect();
 });
 
 prisma.$connect().catch((error) => {

@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import logger from "./logger.js";
-import { createConsumer, createProducer } from "./kafka.js";
+import { createConsumer, createProducer, ensureTopicExists } from "./kafka.js";
 import { startConsumer } from "./consumer.js";
 import { startServer } from "./server.js";
 
@@ -22,13 +22,16 @@ const start = async () => {
   await producer.connect();
   global.consumerConnected = true;
 
+  await ensureTopicExists(TOPIC);
   await consumer.subscribe({ topic: TOPIC, fromBeginning: false });
   startConsumer(producer, consumer).catch((error) => {
-    logger.error({ error }, "Kafka consumer stopped unexpextedly");
+    logger.error({ error }, "Kafka consumer stopped unexpectedly");
     process.exit(1);
   });
 
-  startServer(PORT, consumer, producer);
+  const shutdown = startServer(PORT, consumer, producer);
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
   global.ready = true;
 
   logger.info("Analytics Service is up and running");
@@ -37,4 +40,4 @@ const start = async () => {
 start().catch((error) => {
   logger.error({ error }, "Failed to start Analytics Service");
   process.exit(1);
-}); 
+});

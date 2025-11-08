@@ -1,4 +1,19 @@
 services:
+  analytics:
+    build:
+      context: ../analytics-service
+      dockerfile: Dockerfile
+      target: dev
+    command: sh -c "npx prisma migrate dev && npm start"
+    depends_on:
+      analytics_service_db:
+          condition: service_healthy
+      kafka:
+          condition: service_started
+    ports:
+      - "5001:5001"
+    
+
   postgres:
     volumes:
       - travellog_db_data:/var/lib/postgresql/data

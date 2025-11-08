@@ -9,7 +9,7 @@ dotenv.config();
 const DLQ_TOPIC = process.env.KAFKA_DLQ_TOPIC || "review.created.dlq";
 
 export const startConsumer = async (producer, consumer) => {
-  await consumer.run({
+  consumer.run({
     eachBatchAutoResolve: false,
     eachBatch: async ({
       batch,
@@ -35,6 +35,7 @@ export const startConsumer = async (producer, consumer) => {
             "Failed to parse kafka message JSON"
           );
           reviewProcessedCounter.inc({ status: "invalid_payload" });
+          resolveOffset(message.offset);
           continue;
         }
 
@@ -59,7 +60,7 @@ export const startConsumer = async (producer, consumer) => {
               // Insert into review_events
               await txn.$executeRaw`
                 Insert into review_events(review_id, user_id, place_id, rating, comment, created_at)
-                values(${reviewId}, ${userId}, ${placeId}, ${rating}, ${comment}, ${createdAt})
+                values(${reviewId}, ${userId}, ${placeId}, ${rating}, ${comment}, ${createdAt}::timestamp)
                 On conflict (review_id) DO NOTHING
               `;
             });

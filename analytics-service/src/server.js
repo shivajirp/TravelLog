@@ -3,7 +3,7 @@ import helmet from "helmet";
 import compression from "compression";
 import { register } from "prom-client";
 import logger from "./logger.js";
-import prisma from "./db.js";
+import { prisma } from "./db.js";
 import {
   metricsScrapeErrors,
   httpRequests,
