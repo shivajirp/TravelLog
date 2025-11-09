@@ -4,12 +4,16 @@ services:
       context: ../analytics-service
       dockerfile: Dockerfile
       target: dev
+    volumes:
+      - ../analytics-service/src:/app/src
+      - ../analytics-service/.env:/app/.env
+      - /app/node_modules
     command: sh -c "npx prisma migrate dev && npm start"
     depends_on:
       analytics_service_db:
           condition: service_healthy
       kafka:
-          condition: service_started
+          condition: service_healthy
     ports:
       - "5001:5001"
     
@@ -41,20 +45,7 @@ services:
           condition: service_started
       postgres:
           condition: service_healthy
-    
-  # analytics:
-  #   build:
-  #     context: ../analytics-service
-  #     dockerfile: Dockerfile
-  #   container_name: analytics
-  #   env_file:
-  #     - ../analytics-service/.env
-  #   depends_on:
-  #     - postgres_analytics
-  #     - kafka
-  #   ports:
-  #     - "5000:5000"
 
 volumes:
-  # pgdata_analytics:
+  analytics_service_db:
   travellog_db_data:

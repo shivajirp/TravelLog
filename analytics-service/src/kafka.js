@@ -13,18 +13,22 @@ const kafka = new Kafka({
 export const ensureTopicExists = async (topic) => {
   const admin = kafka.admin();
   await admin.connect();
-  const topics = await admin.listTopics();
-  if (!topics.includes(topic)) {
-    try {
-      await admin.createTopics({
-        topics: [
-          { topic, numPartitions: 3, replicationFactor: 1 },
-        ],
-      });
-      logger.info("Created missing topic:", topic);
-    } catch (error) {
-      logger.error("Failed to create topic", error);
-    }
+
+  try {
+    const topics = await admin.listTopics();
+    if (!topics.includes(topic)) {
+      try {
+        await admin.createTopics({
+          topics: [
+            { topic, numPartitions: 3, replicationFactor: 1 },
+          ],
+        });
+        logger.info("Created missing topic:", topic);
+      } catch (error) {
+        logger.error("Failed to create topic", error);
+      }
+    }    
+  } finally {
     await admin.disconnect();
   }
 };

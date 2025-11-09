@@ -9,7 +9,7 @@ dotenv.config();
 const DLQ_TOPIC = process.env.KAFKA_DLQ_TOPIC || "review.created.dlq";
 
 export const startConsumer = async (producer, consumer) => {
-  consumer.run({
+  return consumer.run({
     eachBatchAutoResolve: false,
     eachBatch: async ({
       batch,
